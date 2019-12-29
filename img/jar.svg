@@ -1,0 +1,23 @@
+<svg width="366" height="489" viewBox="0 0 366 489" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="OuterBoxContainer">
+<g id="Bottle">
+<g id="Group 6">
+<path id="Rectangle 43" d="M0.499908 103.18V441.92C0.499908 467.021 20.8276 487.381 45.9287 487.42L323.768 487.855C346.713 487.891 365.333 469.3 365.333 446.355V106.61C365.333 91.9787 358.85 79.5597 349.171 68.8924C339.517 58.2529 326.705 49.3835 314.048 41.8384H47.5646C42.9421 46.9257 37.701 51.5918 32.449 56.1423C31.6492 56.8353 30.8493 57.5255 30.0513 58.214C25.5451 62.1021 21.0987 65.9386 17.0689 69.9358C7.58624 79.342 0.499908 89.554 0.499908 103.18Z" fill="url(#paint0_linear)" stroke="black"/>
+<rect id="Rectangle 45" width="304.056" height="41.3382" rx="15" transform="matrix(-1 0 0 1 334.945 0)" fill="#C4C4C4"/>
+</g>
+</g>
+<path id="InnerBoxContainer" d="M14.5 99.6521V421.298C14.5 445.116 33.2539 464.711 57.0489 465.755L304.212 476.602C327.046 477.604 346.186 459.524 346.484 436.67L350.843 102.722C351.017 89.4443 345.207 78.0656 336.383 68.1044C327.639 58.2328 316.013 49.8459 304.561 42.5H57.6941C53.5589 47.3284 48.8311 51.7419 44.0906 55.9967C43.0027 56.9731 41.9156 57.9399 40.8345 58.9014C37.0065 62.306 33.2535 65.6438 29.8081 69.1024C20.9863 77.9583 14.5 87.3036 14.5 99.6521Z" stroke="url(#paint1_linear)" stroke-width="3"/>
+</g>
+<defs>
+<linearGradient id="paint0_linear" x1="182.916" y1="41.3384" x2="182.916" y2="488.42" gradientUnits="userSpaceOnUse">
+<stop stop-color="#B69C9C"/>
+<stop offset="0.246036" stop-color="white" stop-opacity="0"/>
+<stop offset="1" stop-color="#41667A"/>
+</linearGradient>
+<linearGradient id="paint1_linear" x1="177.419" y1="34.2309" x2="177.419" y2="480.571" gradientUnits="userSpaceOnUse">
+<stop offset="0.0260417" stop-color="#3B9ADE" stop-opacity="0"/>
+<stop offset="0.578125" stop-color="#3B9ADE" stop-opacity="0"/>
+<stop offset="0.630208" stop-color="#3B9ADE"/>
+</linearGradient>
+</defs>
+</svg>

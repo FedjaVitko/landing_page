@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Bouncing Ball</title>
+        <style>
+            .about_section {
+                position: relative;
+                min-height: 100vh;
+                margin: 0 auto;
+                background-image: url('./img/about-background.svg');
+                background-size: cover;
+                background-repeat: no-repeat;
+            }
+
+            .jar {
+                position: absolute;
+                left: 15%;
+                top: 15%;
+                min-height: 90vh;
+                width: 40vw;
+                z-index: 100;
+                background-image: url('./img/jar.svg');
+                background-size: cover;
+                background-repeat: no-repeat;
+            }
+
+            .jar_canvas {
+                position: absolute;
+                bottom: 10px;
+                width: 100%;
+                height: 100%;
+                z-index: -100;
+            }
+
+            .jar_canvas canvas {
+                width: 100%;
+                height: 100%;
+            }
+
+            .jar_label {
+                color: white;
+                background-color: #2E80ED;
+                width: 40%;
+                margin: 40% auto 0 auto;
+                z-index: 200;
+                padding: 2%;
+            }
+
+        </style>
+    </head>
+    <!-- the inline CSS on the body ("margin: 0px;") removes the extra space
+        around the canvas, making it flush with the edge of the page -->
+    <body style="margin: 0px;">
+        <div class="about_section">
+            <div class="jar">
+                <div class="jar_label">
+                    <p>I code!</p>
+                    <p>I take chances!</p>
+                    <p>I make things happen!</p>
+                </div>
+                <div class="jar_canvas">
+                    <canvas id="canvas"/>
+                </div>
+            </div>
+            <script src="script.js"></script>
+        </div>
+    </body>
+</html>

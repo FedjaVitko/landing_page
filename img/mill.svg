@@ -1,0 +1,48 @@
+<svg width="1132" height="1019" viewBox="0 0 1132 1019" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="MillOnly">
+<g id="Podest">
+<g id="Basket">
+<mask id="mask0" mask-type="alpha" maskUnits="userSpaceOnUse" x="380" y="602" width="422" height="298">
+<ellipse id="Ellipse 8" cx="591.261" cy="750.5" rx="210.239" ry="148.442" transform="rotate(-179.984 591.261 750.5)" fill="#C4C4C4"/>
+</mask>
+<g mask="url(#mask0)">
+<rect id="Rectangle 15" x="843.532" y="804.262" width="462.526" height="167.392" transform="rotate(-179.984 843.532 804.262)" fill="#C4C4C4"/>
+</g>
+</g>
+<rect id="Rectangle 37" x="325" y="786.96" width="531.564" height="111.908" rx="25" fill="#C4C4C4"/>
+</g>
+<g id="Mill">
+<mask id="mask1" mask-type="alpha" maskUnits="userSpaceOnUse" x="158" y="-5" width="867" height="865">
+<g id="MillMasc">
+<rect id="Rectangle 38" x="198.143" y="245.359" width="239.483" height="833.096" transform="rotate(-49.1053 198.143 245.359)" fill="#1B1A1A"/>
+<g id="Rectangle 39">
+<rect x="227.753" y="663.354" width="239.483" height="833.096" transform="rotate(-106.923 227.753 663.354)" fill="#1B1A1A"/>
+<rect x="227.753" y="663.354" width="239.483" height="833.096" transform="rotate(-106.923 227.753 663.354)" fill="#1B1A1A"/>
+<rect x="227.753" y="663.354" width="239.483" height="833.096" transform="rotate(-106.923 227.753 663.354)" fill="#1B1A1A"/>
+<rect x="227.753" y="663.354" width="239.483" height="833.096" transform="rotate(-106.923 227.753 663.354)" fill="#1B1A1A"/>
+</g>
+<g id="Rectangle 40">
+<rect x="626.928" y="859.506" width="239.483" height="833.096" transform="rotate(-168.663 626.928 859.506)" fill="#1B1A1A"/>
+<rect x="626.928" y="859.506" width="239.483" height="833.096" transform="rotate(-168.663 626.928 859.506)" fill="#1B1A1A"/>
+<rect x="626.928" y="859.506" width="239.483" height="833.096" transform="rotate(-168.663 626.928 859.506)" fill="#1B1A1A"/>
+<rect x="626.928" y="859.506" width="239.483" height="833.096" transform="rotate(-168.663 626.928 859.506)" fill="#1B1A1A"/>
+</g>
+</g>
+</mask>
+<g mask="url(#mask1)">
+<circle id="Ellipse 11" cx="591.404" cy="427.557" r="445.846" fill="url(#paint0_radial)"/>
+</g>
+</g>
+</g>
+<defs>
+<radialGradient id="paint0_radial" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(591.404 427.557) rotate(90) scale(445.846)">
+<stop offset="0.0104167" stop-color="#41667A" stop-opacity="0.4"/>
+<stop offset="0.0572917" stop-color="#E5E4E4"/>
+<stop offset="0.161458" stop-color="#E0BABA"/>
+<stop offset="0.34375" stop-color="#DD3A3A"/>
+<stop offset="0.479167" stop-color="#D85656" stop-opacity="0.793651"/>
+<stop offset="0.734286" stop-color="#DC4F4F"/>
+<stop offset="0.942708" stop-color="#C4C4C4" stop-opacity="0.74"/>
+</radialGradient>
+</defs>
+</svg>
