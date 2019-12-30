@@ -13,10 +13,10 @@ var requestAnimFrame = (function(){
 
 var canvas = document.getElementById("canvas");
 var c = canvas.getContext("2d");
-var gravity = 0.1;
-var dampening = 0.995;
-var mousePullStrength = 0.005;
-var animate = false;
+
+var gravity = 1.6;
+var dampening = 0.4;
+var circleRadius = canvas.width / 10;
 
 var mouse = {
     x : 0,
@@ -26,58 +26,82 @@ var mouse = {
 
 var circles = [
     {
-        x : canvas.width/2,
-        y : canvas.height/2,
+        x : canvas.width / 2,
+        y : canvas.height / 2,
         vx: 0,
         vy: 0,
-        radius: 12,
-        lineWidth: 3,
+        lineWidth: 1,
         fillColor: 'black',
         strokeColor: 'red'
     },
     {
-        x : canvas.width/3,
-        y : canvas.height/3,
+        x : canvas.width / 3,
+        y : canvas.height / 3,
         vx: 0,
         vy: 0,
-        radius: 24,
-        lineWidth: 7,
+        lineWidth: 1,
         fillColor: 'red',
         strokeColor: 'black'
     }
 ];
 
+const axisEnum = {
+    x : 'x',
+    y : 'y',
+    all : 'all',
+}
+
+const makeCanvasResponsive = () => {
+    const prevCanvasWidth = canvas.width;
+    const prevCanvasHeight = canvas.height;
+
+    const canvasContainer = document.getElementsByClassName('jar_canvas')[0];
+    canvas.width = canvasContainer.clientWidth;
+    canvas.height = canvasContainer.clientHeight;
+
+    const calcNewValue = (value, axis) => {
+        newValue = value;
+
+        switch (axis) {
+            case axisEnum.x :
+                newValue = (value / prevCanvasWidth) * canvas.width;
+                break;
+            case axisEnum.y :
+                newValue = (value / prevCanvasHeight) * canvas.height;
+                break;
+            case axisEnum.all :
+                newValue = (value / (prevCanvasHeight + prevCanvasWidth)) * (canvas.height + canvas.width);
+                break;
+        }
+
+        return newValue;
+    }
+
+    circleRadius = calcNewValue(circleRadius, axisEnum.all);
+    gravity = calcNewValue(gravity, axisEnum.all);
+    circles = circles.map(({ x, y, vx, vy, lineWidth, ...rest }) => ({
+        ...rest,
+        x: calcNewValue(x, axisEnum.x),
+        y: calcNewValue(y, axisEnum.y),
+        vx: calcNewValue(vx, axisEnum.x),
+        vy: calcNewValue(vy, axisEnum.y),
+        lineWidth: calcNewValue(lineWidth, axisEnum.y),
+    }));
+}
+
+
+makeCanvasResponsive();
+
+console.log(canvas.width);
+
 function executeFrame(){
-    animate = true;
     requestAnimFrame(executeFrame);
+    makeCanvasResponsive();
     incrementSimulation();
     c.clearRect(0, 0, canvas.width, canvas.height);
-    drawBox();
     circles.forEach(circle => {
         drawCircle(circle);
     });
-    if(mouse.down)
-        drawLineToMouse();
-}
-
-const drawJar = () => {
-    const topLeftCorner = {
-        x: canvas.width * 0.1,
-        y: canvas.height * 0.7
-    }
-    const bottomLeftCorner = {
-        x: topLeftCorner.x,
-        y: canvas.height - canvas.height * 0.05
-    }
-    const bottomRightCorner = {
-        x: canvas.width * 0.9,
-        y: bottomLeftCorner.y
-    }
-    const topRightCorner = {
-        x: bottomRightCorner.x,
-        y: topLeftCorner.y
-    }
-    drawShape(topLeftCorner, [bottomLeftCorner, bottomRightCorner, topRightCorner]);
 }
 
 const drawShape = (startNode, nodes, opts = {
@@ -92,18 +116,25 @@ const drawShape = (startNode, nodes, opts = {
 }
 
 function incrementSimulation(){
-    circles = circles.map(circle => {
-        let { x, y, vx, vy, radius } = circle;
+    circles = circles.map((circle, index) => {
+        let { x, y, vx, vy } = circle;
 
-        if(mouse.down){
-            var dx = mouse.x - x,
-                dy = mouse.y - y,
-                distance = Math.sqrt(dx*dx + dy*dy),
-                unitX = dx / distance,
-                unitY = dy / distance,
-                force = distance * mousePullStrength;
-            vx += unitX * force;
-            vy += unitY * force;
+        if (mouse.down) {
+            console.log('circle ' + index + ' -----------------------');
+            //console.log(mouse.x > x - circleRadius);
+            console.log(mouse.x < x + circleRadius);
+            console.log(mouse.x, x + circleRadius);
+            //console.log(mouse.y > y - circleRadius);
+            //console.log(mouse.y < y + circleRadius);
+            if (
+                mouse.x > x - circleRadius &&
+                mouse.x < x + circleRadius &&
+                mouse.y > y - circleRadius &&
+                mouse.y < y + circleRadius
+            ) {
+                console.log(`circle ${index} clicked`);
+            }
+
         }
 
         // Execute gravity
@@ -118,23 +149,23 @@ function incrementSimulation(){
         y += vy;
 
         // Bounce off the floor
-        if(y + radius > canvas.height){
-            y = canvas.height - radius;
+        if(y + circleRadius > canvas.height){
+            y = canvas.height - circleRadius;
             vy = - Math.abs(vy);
         }
         // Bounce off the ceiling
-        else if(y - radius < 0){
-            y = radius;
+        else if(y - circleRadius < 0){
+            y = circleRadius;
             vy = Math.abs(vy);
         }
         // Bounce off the right wall
-        if(x + radius > canvas.width){
-            x = canvas.width - radius;
+        if(x + circleRadius > canvas.width){
+            x = canvas.width - circleRadius;
             vx = - Math.abs(vx);
         }
         // Bounce off the left wall
-        else if(x - radius < 0){
-            x = radius;
+        else if(x - circleRadius < 0){
+            x = circleRadius;
             vx = Math.abs(vx);
         }
 
@@ -148,9 +179,9 @@ function drawBox(){
     c.strokeRect(0.5, 0.5, canvas.width - 1, canvas.height - 1);
 }
 
-function drawCircle({x, y, radius, fillColor, strokeColor, lineWidth}){
+function drawCircle({x, y, fillColor, strokeColor, lineWidth}){
     c.beginPath();
-    c.arc(x, y, radius - lineWidth/2, 0 , 2 * Math.PI, false);
+    c.arc(x, y, circleRadius - lineWidth/2, 0 , 2 * Math.PI, false);
     c.fillStyle = fillColor;
     c.fill();
     c.lineWidth = 4;
@@ -165,14 +196,17 @@ canvas.addEventListener('mousedown',function(e){
 });
 
 canvas.addEventListener('mousemove', function(e){
+    console.log('sdfs');
     mouse.x = e.pageX;
     mouse.y = e.pageY;
+    console.log('X ' + mouse.x);
 });
 
 canvas.addEventListener('mouseup', function(e){
-    mouse.down = false;
+    //mouse.down = false;
 });
 
 // Draw the initial scene once, so something
 // is displayed before animation starts.
+// Draw the initial scene once, so something
 executeFrame();

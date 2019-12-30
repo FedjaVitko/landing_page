@@ -16,11 +16,12 @@
                 position: absolute;
                 left: 15%;
                 top: 15%;
-                min-height: 90vh;
-                width: 40vw;
+                height: 90vh;
+                width: 67.5vh;
+                top: 15%;
                 z-index: 100;
                 background-image: url('./img/jar.svg');
-                background-size: cover;
+                background-size: contain;
                 background-repeat: no-repeat;
             }
 
@@ -33,17 +34,28 @@
             }
 
             .jar_canvas canvas {
-                width: 100%;
-                height: 100%;
             }
 
             .jar_label {
-                color: white;
-                background-color: #2E80ED;
-                width: 40%;
-                margin: 40% auto 0 auto;
+                color: black;
+                background-color: rgb(234, 89, 89);
+                width: 60%;
+                margin: 20% auto 0 auto;
                 z-index: 200;
-                padding: 2%;
+                padding: 1rem;
+                font-size: 1.6rem;
+                opacity: 0.9;
+            }
+
+            .jar_name {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                font-size: 20px;
+                text-align: center;
+                text-transform: uppercase;
+                letter-spacing: 0.3rem;
             }
 
         </style>
@@ -53,6 +65,9 @@
     <body style="margin: 0px;">
         <div class="about_section">
             <div class="jar">
+                <div class="jar_name">
+                    <p>Fedor Vitkovskiy</p>
+                </div>
                 <div class="jar_label">
                     <p>I code!</p>
                     <p>I take chances!</p>
