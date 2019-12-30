@@ -18,10 +18,13 @@ var gravity = 2.7;
 var dampening = 0.85;
 var circleRadius = canvas.width / 10;
 
+var pickedUpIndex = null;
+
 var mouse = {
     x : 0,
     y : 0,
-    down: false
+    pressed: false,
+    clicked: false
 };
 
 var circles = [
@@ -112,26 +115,31 @@ const drawShape = (startNode, nodes, opts = {
     c.stroke();
 }
 
+const isIntersect = (point, circle) => {
+    return Math.sqrt(
+        (point.x - circle.x) ** 2 +
+        (point.y - circle.y) ** 2
+    ) < circleRadius;
+}
+
 function incrementSimulation(){
     circles = circles.map((circle, index) => {
         let { x, y, vx, vy } = circle;
 
-        if (mouse.down) {
-            console.log('circle ' + index + ' -----------------------');
-            //console.log(mouse.x > x - circleRadius);
-            console.log(mouse.x < x + circleRadius);
-            console.log(mouse.x, x + circleRadius);
-            //console.log(mouse.y > y - circleRadius);
-            //console.log(mouse.y < y + circleRadius);
-            if (
-                mouse.x > x - circleRadius &&
-                mouse.x < x + circleRadius &&
-                mouse.y > y - circleRadius &&
-                mouse.y < y + circleRadius
-            ) {
-                console.log(`circle ${index} clicked`);
-            }
+        if (mouse.clicked) {
+            pickedUpIndex = null;
+        }
 
+        if (
+            mouse.pressed && (
+            pickedUpIndex == null ||
+            pickedUpIndex == index)
+        ) {
+            if (isIntersect(mouse, circle)) {
+                pickedUpIndex = index;
+                x = mouse.x;
+                y = mouse.y;
+            }
         }
 
         // Execute gravity
@@ -186,24 +194,46 @@ function drawCircle({x, y, fillColor, strokeColor, lineWidth}){
     c.stroke();
 }
 
-canvas.addEventListener('mousedown',function(e){
-    mouse.down = true;
-    mouse.x = e.pageX;
-    mouse.y = e.pageY;
-});
+const addListeners = () => {
+    canvas.addEventListener('mousedown',function(e){
+        currMousePos = getMousePos(e);
+        mouse.x = currMousePos.x;
+        mouse.y = currMousePos.y;
 
-canvas.addEventListener('mousemove', function(e){
-    console.log('sdfs');
-    mouse.x = e.pageX;
-    mouse.y = e.pageY;
-    console.log('X ' + mouse.x);
-});
+        mouse.pressed = true;
+    });
 
-canvas.addEventListener('mouseup', function(e){
-    //mouse.down = false;
-});
+    canvas.addEventListener('mouseup', function(e){
+        //mouse.down = false;
+    });
+
+    canvas.addEventListener('mousemove', function(e){
+        currMousePos = getMousePos(e);
+        mouse.x = currMousePos.x;
+        mouse.y = currMousePos.y;
+    });
+
+    canvas.addEventListener('click', function(e){
+        currMousePos = getMousePos(e);
+        mouse.x = currMousePos.x;
+        mouse.y = currMousePos.y;
+
+        mouse.clicked = true;
+    });
+
+}
+
+const getMousePos = (e) => {
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    };
+}
 
 // Draw the initial scene once, so something
 // is displayed before animation starts.
 // Draw the initial scene once, so something
+
+document.addEventListener('DOMContentLoaded', addListeners, false);
 executeFrame();
