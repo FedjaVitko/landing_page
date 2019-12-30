@@ -14,8 +14,8 @@ var requestAnimFrame = (function(){
 var canvas = document.getElementById("canvas");
 var c = canvas.getContext("2d");
 
-var gravity = 1.6;
-var dampening = 0.4;
+var gravity = 2.7;
+var dampening = 0.85;
 var circleRadius = canvas.width / 10;
 
 var mouse = {
@@ -78,7 +78,6 @@ const makeCanvasResponsive = () => {
     }
 
     circleRadius = calcNewValue(circleRadius, axisEnum.all);
-    gravity = calcNewValue(gravity, axisEnum.all);
     circles = circles.map(({ x, y, vx, vy, lineWidth, ...rest }) => ({
         ...rest,
         x: calcNewValue(x, axisEnum.x),
@@ -91,8 +90,6 @@ const makeCanvasResponsive = () => {
 
 
 makeCanvasResponsive();
-
-console.log(canvas.width);
 
 function executeFrame(){
     requestAnimFrame(executeFrame);
