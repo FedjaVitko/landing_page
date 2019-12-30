@@ -1,3 +1,43 @@
+/*
+ * 2D Vector class
+ */
+function Vector2D(x, y) {
+    this.x = x || 0;
+    this.y = y || 0;
+}
+
+Vector2D.prototype.length = function() { return Math.sqrt(Vector2D.dot(this, this)) };
+
+Vector2D.add = function(a, b) {
+	if (b instanceof Vector2D) return new Vector2D(a.x + b.x, a.y + b.y);
+	else return new Vector2D(a.x + b, a.y + b);
+};
+Vector2D.subtract = function(a, b) {
+	if (b instanceof Vector2D) return new Vector2D(a.x - b.x, a.y - b.y);
+	else return new Vector2D(a.x - b, a.y - b);
+};
+Vector2D.multiply = function(a, b) {
+	if (b instanceof Vector2D) return new Vector2D(a.x * b.x, a.y * b.y);
+	else return new Vector2D(a.x * b, a.y * b);
+};
+Vector2D.divide = function(a, b) {
+	if (b instanceof Vector2D) return new Vector2D(a.x / b.x, a.y / b.y);
+	else return new Vector2D(a.x / b, a.y / b);
+};
+Vector2D.equals = function(a, b) {
+	return a.x == b.x && a.y == b.y;
+};
+Vector2D.dot = function(a, b) {
+	return a.x * b.x + a.y * b.y;
+};
+Vector2D.unit = function(a) {
+    const magnitude = Math.sqrt(a.x * a.x + a.y * a.y);
+
+    return new Vector2D(a.x / magnitude, a.y / magnitude);
+}
+
+
+
 // shim layer for requestAnimationFrame with setTimeout fallback
 // from http://paulirish.com/2011/requestanimationframe-for-smart-animating/
 var requestAnimFrame = (function(){
@@ -17,6 +57,8 @@ var c = canvas.getContext("2d");
 var gravity = 2.7;
 var dampening = 0.85;
 var circleRadius = canvas.width / 10;
+var floorOffsetX = canvas.width * 0.15;
+var floorOffsetY = canvas.height * 0.15;
 
 var pickedUpIndex = null;
 
@@ -48,11 +90,23 @@ var circles = [
     }
 ];
 
+var floor = {
+    p1: {
+        x: floorOffsetX,
+        y: canvas.height - floorOffsetY
+    },
+    p2: {
+        x: canvas.width - floorOffsetX,
+        y: (canvas.height - floorOffsetY) - canvas.height * 0.04
+    }
+}
+
 const axisEnum = {
     x : 'x',
     y : 'y',
     all : 'all',
 }
+
 
 const makeCanvasResponsive = () => {
     const prevCanvasWidth = canvas.width;
@@ -81,6 +135,8 @@ const makeCanvasResponsive = () => {
     }
 
     circleRadius = calcNewValue(circleRadius, axisEnum.all);
+    floorOffsetX = calcNewValue(floorOffsetX, axisEnum.x);
+    floorOffsetY = calcNewValue(floorOffsetY, axisEnum.y);
     circles = circles.map(({ x, y, vx, vy, lineWidth, ...rest }) => ({
         ...rest,
         x: calcNewValue(x, axisEnum.x),
@@ -89,8 +145,15 @@ const makeCanvasResponsive = () => {
         vy: calcNewValue(vy, axisEnum.y),
         lineWidth: calcNewValue(lineWidth, axisEnum.y),
     }));
-}
 
+    for (let key in floor) {
+        const currPoint = floor[key];
+        floor[key] = {
+            x: calcNewValue(currPoint.x, axisEnum.x),
+            y: calcNewValue(currPoint.y, axisEnum.y),
+        }
+    }
+}
 
 makeCanvasResponsive();
 
@@ -99,13 +162,18 @@ function executeFrame(){
     makeCanvasResponsive();
     incrementSimulation();
     c.clearRect(0, 0, canvas.width, canvas.height);
+    drawFloor();
     circles.forEach(circle => {
         drawCircle(circle);
     });
 }
 
+const drawFloor = () => {
+    drawShape(floor.p1, [floor.p2]);
+}
+
 const drawShape = (startNode, nodes, opts = {
-    lineWidth: 2
+    lineWidth: 4
 }) => {
     c.lineWidth = opts.lineWidth;
 
@@ -115,7 +183,35 @@ const drawShape = (startNode, nodes, opts = {
     c.stroke();
 }
 
-const isIntersect = (point, circle) => {
+const circleIntersectsSegment = (circle, segment) => {
+    const debugObj = {};
+    let closest;
+
+    const segA = new Vector2D(segment.p1.x, segment.p1.y);
+    const segB = new Vector2D(segment.p2.x, segment.p2.y);
+    const circlePos = new Vector2D(circle.x, circle.y);
+
+    const segV = Vector2D.subtract(segB, segA);
+    const ptV = Vector2D.subtract(circlePos, segA);
+
+    const projVLength = Vector2D.dot(ptV, Vector2D.unit(segV));
+
+    if (Math.abs(projVLength) < 0)
+        closest = segA;
+    if (Math.abs(projVLength) > Math.abs(segV))
+        closest = segB;
+
+    const projV = Vector2D.multiply(Vector2D.unit(segV), Math.abs(projVLength));
+
+    closest = Vector2D.add(segA, projV);
+
+    const distV = Vector2D.subtract(closest, circlePos).length();
+    console.log(distV);
+
+    return Math.abs(distV) < circleRadius;
+}
+
+const pointIntersectsCircle = (point, circle) => {
     return Math.sqrt(
         (point.x - circle.x) ** 2 +
         (point.y - circle.y) ** 2
@@ -126,8 +222,8 @@ function incrementSimulation(){
     circles = circles.map((circle, index) => {
         let { x, y, vx, vy } = circle;
 
-        if (mouse.clicked) {
-            pickedUpIndex = null;
+        if (circleIntersectsSegment(circle, floor)) {
+            vx = -4;
         }
 
         if (
@@ -135,11 +231,13 @@ function incrementSimulation(){
             pickedUpIndex == null ||
             pickedUpIndex == index)
         ) {
-            if (isIntersect(mouse, circle)) {
+            if (pointIntersectsCircle(mouse, circle)) {
                 pickedUpIndex = index;
                 x = mouse.x;
                 y = mouse.y;
             }
+        } else {
+            pickedUpIndex = null;
         }
 
         // Execute gravity
@@ -174,6 +272,7 @@ function incrementSimulation(){
             vx = Math.abs(vx);
         }
 
+
         return { ...circle, x, y, vx, vy }
     });
 
@@ -204,7 +303,7 @@ const addListeners = () => {
     });
 
     canvas.addEventListener('mouseup', function(e){
-        //mouse.down = false;
+        mouse.pressed = false;
     });
 
     canvas.addEventListener('mousemove', function(e){
@@ -237,3 +336,5 @@ const getMousePos = (e) => {
 
 document.addEventListener('DOMContentLoaded', addListeners, false);
 executeFrame();
+
+
