@@ -1,45 +1,8 @@
-/*
- * 2D Vector class
- */
-function Vector2D(x, y) {
-  this.x = x || 0;
-  this.y = y || 0;
-}
-
-Vector2D.prototype.length = function() { return Math.sqrt(Vector2D.dot(this, this)) };
-
-Vector2D.add = function(a, b) { if (b instanceof Vector2D) return new Vector2D(a.x + b.x, a.y + b.y);
-  else return new Vector2D(a.x + b, a.y + b);
-};
-Vector2D.subtract = function(a, b) {
-  if (b instanceof Vector2D) return new Vector2D(a.x - b.x, a.y - b.y);
-  else return new Vector2D(a.x - b, a.y - b);
-};
-Vector2D.multiply = function(a, b) {
-  if (b instanceof Vector2D) return new Vector2D(a.x * b.x, a.y * b.y);
-  else return new Vector2D(a.x * b, a.y * b);
-};
-Vector2D.divide = function(a, b) {
-  if (b instanceof Vector2D) return new Vector2D(a.x / b.x, a.y / b.y);
-  else return new Vector2D(a.x / b, a.y / b);
-};
-Vector2D.equals = function(a, b) {
-  return a.x == b.x && a.y == b.y;
-};
-Vector2D.dot = function(a, b) {
-  return a.x * b.x + a.y * b.y;
-};
-Vector2D.unit = function(a) {
-  const magnitude = Math.sqrt(a.x * a.x + a.y * a.y);
-
-  return new Vector2D(a.x / magnitude, a.y / magnitude);
-}
-
-
+import { Vector2D } from "./Vector2D.js";
 
 // shim layer for requestAnimationFrame with setTimeout fallback
 // from http://paulirish.com/2011/requestanimationframe-for-smart-animating/
-var requestAnimFrame = (function(){
+var requestAnimFrame = (() => {
   return window.requestAnimationFrame    ||
     window.webkitRequestAnimationFrame ||
     window.mozRequestAnimationFrame    ||
@@ -56,8 +19,6 @@ var c = canvas.getContext("2d");
 var gravity = 2.7;
 var dampening = 0.85;
 var circleRadius = canvas.width / 10;
-var floorOffsetX = canvas.width * 0.15;
-var floorOffsetY = canvas.height * 0.15;
 
 var pickedUpIndex = null;
 
@@ -86,20 +47,33 @@ var circles = [
     lineWidth: 1,
     fillColor: 'red',
     strokeColor: 'black'
-  }
+  },
 ];
 
-var floor = {
+const interactiveAreaOffsets = {
+  top: 10,
+  right: 30,
+  bottom: 10,
+  left: 30,
+}
+
+var interactiveArea = {
   p1: {
-    x: floorOffsetX,
-    y: canvas.height - floorOffsetY,
-    vy: 0
+    x: interactiveAreaOffsets.left,
+    y: interactiveAreaOffsets.top,
   },
   p2: {
-    x: canvas.width - floorOffsetX,
-    y: canvas.height - floorOffsetY,
-    vy: 0
-  }
+    x: canvas.width - interactiveAreaOffsets.right,
+    y: interactiveAreaOffsets.top,
+  },
+  p3: {
+    x: canvas.width - interactiveAreaOffsets.right,
+    y: canvas.height - interactiveAreaOffsets.bottom + 5,
+  },
+  p4: {
+    x: interactiveAreaOffsets.left,
+    y: canvas.height - interactiveAreaOffsets.bottom,
+  },
 }
 
 const axisEnum = {
@@ -118,7 +92,7 @@ const makeCanvasResponsive = () => {
   canvas.height = canvasContainer.clientHeight;
 
   const calcNewValue = (value, axis) => {
-    newValue = value;
+    var newValue = value;
 
     switch (axis) {
       case axisEnum.x :
@@ -136,8 +110,6 @@ const makeCanvasResponsive = () => {
   }
 
   circleRadius = calcNewValue(circleRadius, axisEnum.all);
-  floorOffsetX = calcNewValue(floorOffsetX, axisEnum.x);
-  floorOffsetY = calcNewValue(floorOffsetY, axisEnum.y);
   circles = circles.map(({ x, y, vx, vy, lineWidth, ...rest }) => ({
     ...rest,
     x: calcNewValue(x, axisEnum.x),
@@ -147,12 +119,13 @@ const makeCanvasResponsive = () => {
     lineWidth: calcNewValue(lineWidth, axisEnum.y),
   }));
 
-  for (let key in floor) {
-    const { x, y, ...rest } = floor[key];
-    floor[key] = {
-      ...rest,
-      x: calcNewValue(x, axisEnum.x),
-      y: calcNewValue(y, axisEnum.y)
+  for (let point in interactiveArea) {
+    const pointX = interactiveArea[point].x;
+    const pointY = interactiveArea[point].y;
+
+    interactiveArea[point] = {
+      x: calcNewValue(pointX, axisEnum.x),
+      y: calcNewValue(pointY, axisEnum.y),
     }
   }
 }
@@ -165,14 +138,14 @@ function executeFrame(){
   incrementSimulation();
   c.clearRect(0, 0, canvas.width, canvas.height);
   drawImage('img/jar.svg', 0, 0, canvas.width, canvas.height);
-  //drawFloor();
+  drawInteractiveArea();
   circles.forEach(circle => {
     drawCircle(circle);
   });
 }
 
-const drawFloor = () => {
-  drawShape(floor.p1, [floor.p2]);
+const drawInteractiveArea = () => {
+  drawShape(interactiveArea.p1, [interactiveArea.p2, interactiveArea.p3, interactiveArea.p4, interactiveArea.p1]);
 }
 
 const drawShape = (startNode, nodes, opts = {
@@ -207,9 +180,12 @@ const circleIntersectsSegment = (circle, segment) => {
 
   closest = Vector2D.add(segA, projV);
 
-  const distV = Vector2D.subtract(closest, circlePos).length();
+  const distV = Vector2D.subtract(closest, circlePos);
+  const distVLength = distV.length();
 
-  return Math.abs(distV) < circleRadius;
+  const offset = Vector2D.multiply(Vector2D.divide(distV, distVLength), circleRadius - distVLength);
+
+  return offset.length();
 }
 
 const calcAngleBetweenPoints = (p1, p2) => Math.atan2(p2.y - p1.y, p2.x - p1.x) * 180 / Math.PI;
@@ -229,21 +205,15 @@ function incrementSimulation(){
     let collisionSurfaceLowestPoint = null;
     let intersectionPoint = null;
 
-    if (false && circleIntersectsSegment(circle, floor)) {
-      y -= vy;
-
-      intersectionPoint = {
-        x: x,
-        y: y - circleRadius
-      }
-      collisionSurfaceLowestPoint = floor.p2;
-    }
-
     if (
       mouse.pressed && (
         pickedUpIndex == null ||
-        pickedUpIndex == index)
+        pickedUpIndex == index
+      ) 
     ) {
+      if (pickedUpIndex == 1) {
+        console.log('the picked up index was 1');
+      }
       if (pointIntersectsCircle(mouse, circle)) {
         pickedUpIndex = index;
         x = mouse.x;
@@ -289,10 +259,18 @@ function incrementSimulation(){
 
     if (intersectionPoint !== null && collisionSurfaceLowestPoint !== null) {
       const angle = calcAngleBetweenPoints(intersectionPoint, collisionSurfaceLowestPoint);
-      
+
       const speedBoost = angle * 0.7;
       vx += speedBoost;
       vy += speedBoost;
+    }
+
+    const offset = circleIntersectsSegment(circle, { p1: interactiveArea.p3, p2: interactiveArea.p4 });
+
+    if (offset < 5) {
+      y = y - offset;
+      vy *= -1;
+      console.log(offset);
     }
 
     return { ...circle, x, y, vx, vy }
@@ -325,7 +303,7 @@ const drawImage = (imgPath, x, y, h, w) => {
 
 const addListeners = () => {
   canvas.addEventListener('mousedown',function(e){
-    currMousePos = getMousePos(e);
+    const currMousePos = getMousePos(e);
     mouse.x = currMousePos.x;
     mouse.y = currMousePos.y;
 
@@ -337,13 +315,13 @@ const addListeners = () => {
   });
 
   canvas.addEventListener('mousemove', function(e){
-    currMousePos = getMousePos(e);
+    const currMousePos = getMousePos(e);
     mouse.x = currMousePos.x;
     mouse.y = currMousePos.y;
   });
 
   canvas.addEventListener('click', function(e){
-    currMousePos = getMousePos(e);
+    const currMousePos = getMousePos(e);
     mouse.x = currMousePos.x;
     mouse.y = currMousePos.y;
 
