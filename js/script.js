@@ -1,4 +1,8 @@
-import { Vector2D } from "./Vector2D.js";
+import {
+  calcAngleBetweenPoints,
+  pointIntersectsCircle,
+  circleIntersectsSegment
+} from "./collisionDetection.js";
 
 // shim layer for requestAnimationFrame with setTimeout fallback
 // from http://paulirish.com/2011/requestanimationframe-for-smart-animating/
@@ -37,7 +41,8 @@ var circles = [
     vy: 0,
     lineWidth: 1,
     fillColor: 'black',
-    strokeColor: 'red'
+    strokeColor: 'red',
+    radius: circleRadius
   },
   {
     x : canvas.width / 3,
@@ -46,7 +51,8 @@ var circles = [
     vy: 0,
     lineWidth: 1,
     fillColor: 'red',
-    strokeColor: 'black'
+    strokeColor: 'black',
+    radius: circleRadius
   },
 ];
 
@@ -117,6 +123,7 @@ const makeCanvasResponsive = () => {
     vx: calcNewValue(vx, axisEnum.x),
     vy: calcNewValue(vy, axisEnum.y),
     lineWidth: calcNewValue(lineWidth, axisEnum.y),
+    radius: circleRadius
   }));
 
   for (let point in interactiveArea) {
@@ -128,74 +135,6 @@ const makeCanvasResponsive = () => {
       y: calcNewValue(pointY, axisEnum.y),
     }
   }
-}
-
-makeCanvasResponsive();
-
-function executeFrame(){
-  requestAnimFrame(executeFrame);
-  makeCanvasResponsive();
-  incrementSimulation();
-  c.clearRect(0, 0, canvas.width, canvas.height);
-  drawImage('img/jar.svg', 0, 0, canvas.width, canvas.height);
-  drawInteractiveArea();
-  circles.forEach(circle => {
-    drawCircle(circle);
-  });
-}
-
-const drawInteractiveArea = () => {
-  drawShape(interactiveArea.p1, [interactiveArea.p2, interactiveArea.p3, interactiveArea.p4, interactiveArea.p1]);
-}
-
-const drawShape = (startNode, nodes, opts = {
-  lineWidth: 4
-}) => {
-  c.lineWidth = opts.lineWidth;
-
-  c.moveTo(startNode.x, startNode.y);
-  nodes.forEach(node => c.lineTo(node.x, node.y));
-
-  c.stroke();
-}
-
-const circleIntersectsSegment = (circle, segment) => {
-  let closest;
-
-  const segA = new Vector2D(segment.p1.x, segment.p1.y);
-  const segB = new Vector2D(segment.p2.x, segment.p2.y);
-  const circlePos = new Vector2D(circle.x, circle.y);
-
-  const segV = Vector2D.subtract(segB, segA);
-  const angleBetweenSegVAndXAxis = Math.atan2();
-  const ptV = Vector2D.subtract(circlePos, segA);
-
-  const projVLength = Vector2D.dot(ptV, Vector2D.unit(segV));
-  if (Math.abs(projVLength) < 0)
-    closest = segA;
-  if (Math.abs(projVLength) > Math.abs(segV))
-    closest = segB;
-
-  const projV = Vector2D.multiply(Vector2D.unit(segV), Math.abs(projVLength));
-
-  closest = Vector2D.add(segA, projV);
-
-  const distV = Vector2D.subtract(closest, circlePos);
-  const distVLength = distV.length();
-
-  const offset = Vector2D.multiply(Vector2D.divide(distV, distVLength), circleRadius - distVLength);
-
-  return offset.length();
-}
-
-const calcAngleBetweenPoints = (p1, p2) => Math.atan2(p2.y - p1.y, p2.x - p1.x) * 180 / Math.PI;
-
-
-const pointIntersectsCircle = (point, circle) => {
-  return Math.sqrt(
-    (point.x - circle.x) ** 2 +
-    (point.y - circle.y) ** 2
-  ) < circleRadius;
 }
 
 function incrementSimulation(){
@@ -278,6 +217,21 @@ function incrementSimulation(){
 
 }
 
+
+const drawInteractiveArea = () => {
+  drawShape(interactiveArea.p1, [interactiveArea.p2, interactiveArea.p3, interactiveArea.p4, interactiveArea.p1]);
+}
+
+const drawShape = (startNode, nodes, opts = {
+  lineWidth: 4
+}) => {
+  c.lineWidth = opts.lineWidth;
+
+  c.moveTo(startNode.x, startNode.y);
+  nodes.forEach(node => c.lineTo(node.x, node.y));
+
+  c.stroke();
+}
 function drawBox(){
   c.lineWidth = 0.001;
   c.strokeRect(0.5, 0.5, canvas.width - 1, canvas.height - 1);
@@ -336,6 +290,18 @@ const getMousePos = (e) => {
     x: e.clientX - rect.left,
     y: e.clientY - rect.top
   };
+}
+
+function executeFrame(){
+  requestAnimFrame(executeFrame);
+  makeCanvasResponsive();
+  incrementSimulation();
+  c.clearRect(0, 0, canvas.width, canvas.height);
+  drawImage('img/jar.svg', 0, 0, canvas.width, canvas.height);
+  drawInteractiveArea();
+  circles.forEach(circle => {
+    drawCircle(circle);
+  });
 }
 
 // Draw the initial scene once, so something
